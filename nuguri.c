@@ -54,7 +54,9 @@ void draw_game();
 void update_game(char input);
 void move_player(char input);
 void move_enemies();
-void check_collisions();
+void check_collisions();\
+void live_update();
+
 int kbhit();
 
 int main() {

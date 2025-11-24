@@ -6,6 +6,14 @@
 #include <fcntl.h>
 #include <time.h>
 
+#ifdef _WIN32
+#else
+    void beep(void) {
+        printf("\a");      // 터미널 벨 문자
+        fflush(stdout);    // 바로 출력
+    }
+#endif
+
 // 맵 및 게임 요소 정의 (수정된 부분)
 #define MAP_WIDTH 40  // 맵 너비를 40으로 변경
 #define MAP_HEIGHT 20
@@ -294,6 +302,7 @@ void check_collisions() {
         if (!coins[i].collected && player_x == coins[i].x && player_y == coins[i].y) {
             coins[i].collected = 1;
             score += 20;
+            beep(); //코인을 먹었을때 비프음 추가
         }
     }
 }

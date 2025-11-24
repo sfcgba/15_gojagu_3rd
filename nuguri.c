@@ -34,7 +34,7 @@ int score = 0;
 int is_jumping = 0;
 int velocity_y = 0;
 int on_ladder = 0;
-int Heart = 3; // 생명력을 3개로 선언
+int Heart = 3; // 생명력을 3개로 선언함
 
 // 게임 객체
 Enemy enemies[MAX_ENEMIES];

@@ -55,12 +55,56 @@ void move_player(char input);
 void move_enemies();
 void check_collisions();
 int kbhit();
+void title_screen();
 
+void title_screen1(){
+    printf("\n\n\n\n\n");
+    printf("              =======================\n");
+    printf("                     N U G U R I    \n");
+    printf("                       G A M E       \n");
+    printf("              =======================\n\n\n");
+}
+void title_screen2(){
+    printf("\n\n\n\n\n");
+	printf("          -----------------------------------\n");
+	printf("          |                                 |\n");
+	printf("          |          1. start game          |\n");
+    printf("          |          2. end game            |\n");
+    printf("          |                                 |\n");
+    printf("          -----------------------------------\n");
+	printf("\n"); 
+}
 int main() {
     srand(time(NULL));
     enable_raw_mode();
+
+    char choice ='\0'; 
+
+    printf("\033[2J\033[H"); 
+    title_screen1();
+    usleep(3000000);
+  
+    printf("\033[2J\033[H");  
+    title_screen2();
+
+    while(choice!='1' && choice!='2'){ 
+        
+        if(kbhit())
+        { 
+            choice=getchar();
+        }
+    } 
+        if (choice == '2') {
+        printf("\033[2J\033[H");  
+        printf("게임 종료.\n");
+        disable_raw_mode();
+        return 0;
+        }
+
+
     load_maps();
     init_stage();
+    
 
     char c = '\0';
     int game_over = 0;

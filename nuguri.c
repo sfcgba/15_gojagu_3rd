@@ -58,7 +58,6 @@ int score = 0;
 int is_jumping = 0;
 int velocity_y = 0;
 int on_ladder = 0;
-int Heart = 3; // 생명력을 3개로 선언함
 
 // 게임 객체
 Enemy enemies[MAX_ENEMIES];
@@ -79,7 +78,6 @@ void update_game(char input);
 void move_player(char input);
 void move_enemies();
 void check_collisions();
-
 int kbhit();
 void title_screen1();
 void title_screen2();
@@ -136,8 +134,8 @@ int main() {
 
     char c = '\0';
     int game_over = 0;
-    // 게임 종료 조건에 hp가 0일때를 표시 /  while문이므로 원하는 조건의 반대를 작성
-    while (!game_over && stage < MAX_STAGES && Heart > 0 ) { 
+
+    while (!game_over && stage < MAX_STAGES) {
         if (kbhit()) {
             c = getchar();
             if (c == 'q') {
@@ -214,6 +212,7 @@ void load_maps() {
     fclose(file);
 }
 
+
 // 현재 스테이지 초기화
 void init_stage() {
     enemy_count = 0;
@@ -240,7 +239,7 @@ void init_stage() {
 // 게임 화면 그리기
 void draw_game() {
     printf("\x1b[2J\x1b[H");
-    printf("Stage: %d | Score: %d | life : %d\n", stage + 1, score, Heart); // 실시간으로 체력이 표시되도록 추가
+    printf("Stage: %d | Score: %d\n", stage + 1, score);
     printf("조작: ← → (이동), ↑ ↓ (사다리), Space (점프), q (종료)\n");
 
     char display_map[MAP_HEIGHT][MAP_WIDTH + 1];
@@ -339,6 +338,7 @@ void move_player(char input) {
     if (player_y >= MAP_HEIGHT) init_stage();
 }
 
+
 // 적 이동 로직
 void move_enemies() {
     for (int i = 0; i < enemy_count; i++) {
@@ -356,7 +356,6 @@ void check_collisions() {
     for (int i = 0; i < enemy_count; i++) {
         if (player_x == enemies[i].x && player_y == enemies[i].y) {
             score = (score > 50) ? score - 50 : 0;
-            Game_heart--; // 충돌시 현재 생명력 감소 
             init_stage();
             return;
         }

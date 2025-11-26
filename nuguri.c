@@ -82,6 +82,7 @@ int kbhit();
 void title_screen1();
 void title_screen2();
 void ending_clear();
+void ending_gameover();
 
 
 void title_screen1(){
@@ -100,10 +101,13 @@ void title_screen2(){
     printf("          |                                 |\n");
     printf("          -----------------------------------\n");
 	printf("\n"); 
+    
 }
 
 
-void ending_clear(int final_score){//클리어시 엔딩화면 함수 추가
+
+
+void ending_clear(int final_score){//클리어 시 엔딩화면 함수 추가
     printf("\033[2J\033[H");
     printf("\n\n\n\n\n");
     printf("              ===========================       \n");
@@ -111,14 +115,26 @@ void ending_clear(int final_score){//클리어시 엔딩화면 함수 추가
     printf("                      최종 점수: %d \n", final_score);
     printf("              ===========================   \n\n\n");
     delay(5000);
+}
+
+void ending_gameover(int final_score){//게임 오버 시 엔딩화면 함수 추가
+    printf("\033[2J\033[H");
+    printf("\n\n\n\n\n");
+    printf("               ==============================       \n");
+    printf("                     G A M E   O V E R. . .              \n"); 
+    printf("                        최종 점수: %d    \n", final_score);
+    printf("               ==============================   \n\n\n");
+    delay(5000);
 
 }
+
+
 int main() {
     srand(time(NULL));
     enable_raw_mode();
 
-    char choice ='\0'; 
-
+    char choice ='\0';  
+    
     printf("\033[2J\033[H"); 
     title_screen1();
     delay(3000);

@@ -1,10 +1,32 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
+#ifdef _WIN32//window 
+#include <windows.h>
+#include <conio.h>
+
+
+#else//Linux, macOS
 #include <unistd.h>
 #include <termios.h>
 #include <fcntl.h>
-#include <time.h>
+#endif
+
+
+#ifdef _WIN32//window 
+    
+    void delay(int ms){ 
+        Sleep(ms);
+    }
+
+#else
+    
+    void delay(int  ms){
+        usleep(ms*1000);
+    }
+#endif
 
 // 맵 및 게임 요소 정의 (수정된 부분)
 #define MAP_WIDTH 40  // 맵 너비를 40으로 변경
@@ -23,6 +45,8 @@ typedef struct {
     int x, y;
     int collected;
 } Coin;
+
+
 
 // 전역 변수
 char map[MAX_STAGES][MAP_HEIGHT][MAP_WIDTH + 1];
@@ -55,12 +79,14 @@ void move_player(char input);
 void move_enemies();
 void check_collisions();
 int kbhit();
-void title_screen();
+void title_screen1();
+void title_screen2();
+
 
 void title_screen1(){
     printf("\n\n\n\n\n");
     printf("              =======================\n");
-    printf("                     N U G U R I    \n");
+    printf("                     N U G U R I    \n"); 
     printf("                       G A M E       \n");
     printf("              =======================\n\n\n");
 }
@@ -82,7 +108,7 @@ int main() {
 
     printf("\033[2J\033[H"); 
     title_screen1();
-    usleep(3000000);
+    delay(3000);
   
     printf("\033[2J\033[H");  
     title_screen2();

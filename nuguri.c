@@ -81,6 +81,7 @@ void check_collisions();
 int kbhit();
 void title_screen1();
 void title_screen2();
+void ending_clear();
 
 
 void title_screen1(){
@@ -99,6 +100,18 @@ void title_screen2(){
     printf("          |                                 |\n");
     printf("          -----------------------------------\n");
 	printf("\n"); 
+}
+
+
+void ending_clear(int final_score){//클리어시 엔딩화면 함수 추가
+    printf("\033[2J\033[H");
+    printf("\n\n\n\n\n");
+    printf("              ===========================       \n");
+    printf("                     C L E A R ! !              \n"); 
+    printf("                      최종 점수: %d \n", final_score);
+    printf("              ===========================   \n\n\n");
+    delay(5000);
+
 }
 int main() {
     srand(time(NULL));
@@ -166,9 +179,7 @@ int main() {
                 init_stage();
             } else {
                 game_over = 1;
-                printf("\x1b[2J\x1b[H");
-                printf("축하합니다! 모든 스테이지를 클리어했습니다!\n");
-                printf("최종 점수: %d\n", score);
+                ending_clear(score);//클리어시 엔딩화면 출력 
             }
         }
     }

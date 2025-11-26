@@ -29,10 +29,15 @@
     struct termios orig_termios; // else밖에 선언되어있던 struct termios를 else안에 추가
 
     void coin_Beep() { // 코인 먹는 사운드 함수 입니다.
-    
+        printf("\a"); // \a는 ASCII 벨 문자로 터미널 벨소리가 나오는 것입니다.(이스케이프 코드이기도 하답니다)
+        fflush(stdout);
     }
     void collision_Beep(){ // 부딪혔을때 나오는 사운드 함수 입니다.
-        
+        printf("\a"); 
+        fflush(stdout);
+        usleep(200000);  // 터미널 벨소리 하나밖에 없어 coin과 차별성을 주기위해 0.2초 딜레이를 주고 2번 나오게 했습니다.
+        printf("\a");
+        fflush(stdout);
     }
 
     void delay(int ms){ // 기존에있던 usleep을 delay함수로 변경하여 추가

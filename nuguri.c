@@ -6,27 +6,29 @@
 #ifdef _WIN32//window 
 #include <windows.h>
 #include <conio.h>
-
+    void delay(int ms){ 
+        Sleep(ms);
+    }
+    
+    void clrscr(){
+        system("cls");
+    }
 
 #else//Linux, macOS
 #include <unistd.h>
 #include <termios.h>
 #include <fcntl.h>
-#endif
-
-
-#ifdef _WIN32//window 
-    
-    void delay(int ms){ 
-        Sleep(ms);
-    }
-
-#else
     
     void delay(int  ms){
         usleep(ms*1000);
     }
+    void clrscr(){
+        printf("\033[2J\033[H");
+    }
 #endif
+
+
+
 
 // 맵 및 게임 요소 정의 (수정된 부분)
 #define MAP_WIDTH 40  // 맵 너비를 40으로 변경
@@ -79,20 +81,26 @@ void move_player(char input);
 void move_enemies();
 void check_collisions();
 int kbhit();
+
+void delay(int ms);
+void clrscr();
 void title_screen1();
 void title_screen2();
-void ending_clear();
-void ending_gameover();
+void ending_clear(int final_score);
+void ending_gameover(int final_score);
 
 
-void title_screen1(){
+void title_screen1(){//게임 시작시 나오는 화면   
+    clrscr();
     printf("\n\n\n\n\n");
-    printf("              =======================\n");
+    printf ("              =======================\n");
     printf("                     N U G U R I    \n"); 
     printf("                       G A M E       \n");
     printf("              =======================\n\n\n");
+    delay(3000);
 }
-void title_screen2(){
+void title_screen2(){ //title_screen1 다음에 선택지 화면  
+    clrscr();
     printf("\n\n\n\n\n");
 	printf("          -----------------------------------\n");
 	printf("          |                                 |\n");
@@ -100,7 +108,7 @@ void title_screen2(){
     printf("          |          2. end game            |\n");
     printf("          |                                 |\n");
     printf("          -----------------------------------\n");
-	printf("\n"); 
+
     
 }
 
@@ -108,7 +116,7 @@ void title_screen2(){
 
 
 void ending_clear(int final_score){//클리어 시 엔딩화면 함수 추가
-    printf("\033[2J\033[H");
+    clrscr();
     printf("\n\n\n\n\n");
     printf("              ===========================       \n");
     printf("                     C L E A R ! !              \n"); 
@@ -118,7 +126,7 @@ void ending_clear(int final_score){//클리어 시 엔딩화면 함수 추가
 }
 
 void ending_gameover(int final_score){//게임 오버 시 엔딩화면 함수 추가
-    printf("\033[2J\033[H");
+    clrscr(); 
     printf("\n\n\n\n\n");
     printf("               ==============================       \n");
     printf("                     G A M E   O V E R. . .              \n"); 
@@ -134,12 +142,7 @@ int main() {
     enable_raw_mode();
 
     char choice ='\0';  
-    
-    printf("\033[2J\033[H"); 
-    title_screen1();
-    delay(3000);
-  
-    printf("\033[2J\033[H");  
+    title_screen1();  
     title_screen2();
 
     while(choice!='1' && choice!='2'){ 
@@ -150,7 +153,7 @@ int main() {
         }
     } 
         if (choice == '2') {
-        printf("\033[2J\033[H");  
+        clrscr();
         printf("게임 종료.\n");
         disable_raw_mode();
         return 0;
@@ -265,7 +268,7 @@ void init_stage() {
 
 // 게임 화면 그리기
 void draw_game() {
-    printf("\x1b[2J\x1b[H");
+    clrscr();
     printf("Stage: %d | Score: %d\n", stage + 1, score);
     printf("조작: ← → (이동), ↑ ↓ (사다리), Space (점프), q (종료)\n");
 

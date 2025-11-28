@@ -60,6 +60,7 @@ int score = 0;
 int is_jumping = 0;
 int velocity_y = 0;
 int on_ladder = 0;
+int Heart=3;
 
 // 게임 객체
 Enemy enemies[MAX_ENEMIES];
@@ -269,7 +270,7 @@ void init_stage() {
 // 게임 화면 그리기
 void draw_game() {
     clrscr();
-    printf("Stage: %d | Score: %d\n", stage + 1, score);
+    printf("Stage: %d | Score: %d Heart: %d\n", stage + 1, score, Heart);
     printf("조작: ← → (이동), ↑ ↓ (사다리), Space (점프), q (종료)\n");
 
     char display_map[MAP_HEIGHT][MAP_WIDTH + 1];
@@ -386,6 +387,13 @@ void check_collisions() {
     for (int i = 0; i < enemy_count; i++) {
         if (player_x == enemies[i].x && player_y == enemies[i].y) {
             score = (score > 50) ? score - 50 : 0;
+            Heart--;//충돌시 Heart감소  
+
+            if(Heart<=0){
+                ending_gameover(score);//Heart가 0이면 게임오버 창
+                disable_raw_mode(); //터미널 모드 원상복구
+                exit(0);
+            }
             init_stage();
             return;
         }
@@ -409,7 +417,7 @@ int kbhit() {
     tcsetattr(STDIN_FILENO, TCSANOW, &newt);
     oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
     fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
-    ch = getchar();
+    ch = getchar(); 
     tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
     fcntl(STDIN_FILENO, F_SETFL, oldf);
     if(ch != EOF) {

@@ -190,7 +190,7 @@ int main() {
 
         update_game(c);
         draw_game();
-        usleep(90000);
+        usleep(90000); 
 
         if (map[stage][player_y][player_x] == 'E') {
             stage++;
@@ -347,6 +347,7 @@ void move_player(char input) {
             next_y = player_y + velocity_y;
             if(next_y < 0) next_y = 0;
             velocity_y++;
+            if(velocity_y > 1) velocity_y = 1; // 벽뚫 방지 겸 게임 낙하 속도 강제 조정했습니다.
 
             if (velocity_y < 0 && next_y < MAP_HEIGHT && map[stage][next_y][player_x] == '#') {
                 velocity_y = 0;

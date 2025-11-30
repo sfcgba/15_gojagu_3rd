@@ -3,7 +3,7 @@
 #include <string.h>
 #include <time.h>
 
-#ifdef _WIN32
+#ifdef _WIN32//window
      #include <windows.h>
      #include <conio.h>
 
@@ -18,9 +18,14 @@
      void delay(int ms){ // 기존에있던 usleep함수를 delay로 변경후 각 os에 맞게 분기 둘다 delay()를 사용
         Sleep(ms);
      }
+     
+     void clrscr(){
+        system("cls");
+     }
      void disable_raw_mode(){} // Linux에서는 disable, enable을 사용하는데 windows에서는 사용을 안하지만 
      void enable_raw_mode(){} // 빼면 undefined가 나와서 선언만 해두었습니다.
-#else
+
+#else//Linux, macOS
     #include <unistd.h>
     #include <termios.h>
     #include <fcntl.h>
@@ -42,6 +47,10 @@
 
     void delay(int ms){ // 기존에있던 usleep을 delay함수로 변경하여 추가
         usleep(ms * 1000); // Linux에선 90000이 0.09초인데 windows에선 90000이 90초여서 delay를 90으로 바꾼후 Linux에서 *1000을 해줬습니다.
+    }
+    
+    void clrscr(){
+        printf("\033[2J\033[H");
     }
 
     // 터미널 Raw 모드 활성화/비활성화 else밖에 선언되어있던 disable, enable else안에 추가
@@ -94,6 +103,8 @@ typedef struct {
     int collected;
 } Coin;
 
+
+
 // 전역 변수
 char map[MAX_STAGES][MAP_HEIGHT][MAP_WIDTH + 1];
 int player_x, player_y;
@@ -104,6 +115,7 @@ int score = 0;
 int is_jumping = 0;
 int velocity_y = 0;
 int on_ladder = 0;
+int Heart=3;
 
 // 게임 객체
 Enemy enemies[MAX_ENEMIES];
@@ -125,11 +137,87 @@ void move_enemies();
 void check_collisions();
 int kbhit();
 
+void delay(int ms);
+void clrscr();
+void title_screen1();
+void title_screen2();
+void ending_clear(int final_score);
+void ending_gameover(int final_score);
+
+
+void title_screen1(){//게임 시작시 나오는 화면   
+    clrscr();
+    printf("\n\n\n\n\n");
+    printf ("              =======================\n");
+    printf("                     N U G U R I    \n"); 
+    printf("                       G A M E       \n");
+    printf("              =======================\n\n\n");
+    delay(3000);
+}
+void title_screen2(){ //title_screen1 다음에 선택지 화면  
+    clrscr();
+    printf("\n\n\n\n\n");
+	printf("          -----------------------------------\n");
+	printf("          |                                 |\n");
+	printf("          |          1. start game          |\n");
+    printf("          |          2. end game            |\n");
+    printf("          |                                 |\n");
+    printf("          -----------------------------------\n");
+
+    
+}
+
+
+
+
+void ending_clear(int final_score){//클리어 시 엔딩화면 함수 추가
+    clrscr();
+    printf("\n\n\n\n\n");
+    printf("              ===========================       \n");
+    printf("                     C L E A R ! !              \n"); 
+    printf("                      최종 점수: %d \n", final_score);
+    printf("              ===========================   \n\n\n");
+    delay(5000);
+}
+
+void ending_gameover(int final_score){//게임 오버 시 엔딩화면 함수 추가
+    clrscr(); 
+    printf("\n\n\n\n\n");
+    printf("               ==============================       \n");
+    printf("                     G A M E   O V E R. . .              \n"); 
+    printf("                        최종 점수: %d    \n", final_score);
+    printf("               ==============================   \n\n\n");
+    delay(5000);
+
+}
+
+
 int main() {
     srand(time(NULL));
     enable_raw_mode();
+
+    char choice ='\0';  
+    title_screen1();  
+    title_screen2();
+
+    while(choice!='1' && choice!='2'){ 
+        
+        if(kbhit())
+        { 
+            choice=getchar();
+        }
+    } 
+        if (choice == '2') {
+        clrscr();
+        printf("게임 종료.\n");
+        disable_raw_mode();
+        return 0;
+        }
+
+
     load_maps();
     init_stage();
+    
 
     char c = '\0';
     int game_over = 0;
@@ -183,9 +271,7 @@ int main() {
                 init_stage();
             } else {
                 game_over = 1;
-                printf("\x1b[2J\x1b[H");
-                printf("축하합니다! 모든 스테이지를 클리어했습니다!\n");
-                printf("최종 점수: %d\n", score);
+                ending_clear(score);//클리어시 엔딩화면 출력 
             }
         }
     }
@@ -325,6 +411,7 @@ void move_player(char input) {
             next_y = player_y + velocity_y;
             if(next_y < 0) next_y = 0;
             velocity_y++;
+            if(velocity_y > 1) velocity_y = 1; // 벽뚫 방지 겸 게임 낙하 속도 강제 조정했습니다.
 
             if (velocity_y < 0 && next_y < MAP_HEIGHT && map[stage][next_y][player_x] == '#') {
                 velocity_y = 0;
@@ -366,6 +453,13 @@ void check_collisions() {
         if (player_x == enemies[i].x && player_y == enemies[i].y) {
             score = (score > 50) ? score - 50 : 0;
             collision_Beep();
+            Heart--;//충돌시 Heart감소  
+
+            if(Heart<=0){
+                ending_gameover(score);//Heart가 0이면 게임오버 창
+                disable_raw_mode(); //터미널 모드 원상복구
+                exit(0);
+            }
             init_stage();
             return;
         }

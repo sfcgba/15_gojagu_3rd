@@ -20,7 +20,18 @@
      }
      
      void clrscr(){
-        system("cls");
+        //system("cls"); cls로 화면을 매 프레임 초기화하면 눈뽕이 심해서
+
+        COORD pos = {0, 0}; // 커서 위치를 (0, 0)으로 이동시킨 뒤에
+        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+     }
+
+     void hide_cursor() { // 그 커서를 숨겼습니다.
+        HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+        CONSOLE_CURSOR_INFO info;
+        info.dwSize = 100;
+        info.bVisible = FALSE;
+        SetConsoleCursorInfo(consoleHandle, &info);
      }
      void disable_raw_mode(){} // Linux에서는 disable, enable을 사용하는데 windows에서는 사용을 안하지만 
      void enable_raw_mode(){} // 빼면 undefined가 나와서 선언만 해두었습니다.
@@ -196,6 +207,10 @@ int main() {
     srand(time(NULL));
     enable_raw_mode();
 
+    #ifdef _WIN32 // 윈도우일때만 그 커서 숨기기를 진행하게 했습니다.
+        hide_cursor();
+    #endif
+
     char choice ='\0';  
     title_screen1();  
     title_screen2();
@@ -230,7 +245,17 @@ int main() {
     while (!game_over && stage < MAX_STAGES) {
         #ifdef _WIN32
             if (_kbhit()) { // conio.h 안에 있는 _kbhit() _getch() 를 불러와 windows에서도 키를 입력받게 바꾸고 분기처리하였습니다. 
-                c = _getch(); // w, a, s, d, space는 밑에 이동처리 되어있어 정상 작동하고 q는 Linux처럼 구현하였으며 방향키는 현재 작동하지않습니다.
+                c = _getch();
+
+                if (c == -32 || c == 224){ // 윈도우에서도 방향키 입력 받을 수 있게 추가했습니다.
+                    c = _getch();
+                    switch (c) {
+                        case 72: c = 'w'; break; // Up
+                        case 80: c = 's'; break; // Down
+                        case 77: c = 'd'; break; // Right
+                        case 75: c = 'a'; break; // Left
+                    }
+                }
 
                 if (c == 'q') {
                     game_over = 1;
@@ -333,7 +358,8 @@ void init_stage() {
 
 // 게임 화면 그리기
 void draw_game() {
-    printf("\x1b[2J\x1b[H");
+    //printf("\x1b[2J\x1b[H"); 이건 리눅스랑 맥용이라서 clrscr로 바꿨습니다.
+    clrscr();
     printf("Stage: %d | Score: %d\n", stage + 1, score);
     printf("조작: ← → or A D (이동), ↑ ↓ or W S (사다리), Space (점프), q (종료)\n");
 

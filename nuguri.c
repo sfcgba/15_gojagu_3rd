@@ -15,7 +15,7 @@
         Beep(400, 100);
         Beep(200, 150);
      }
-     void delay(int ms){ // 기존에있던 usleep함수를 delay로 변경후 각 os에 맞게 분기 둘다 delay()를 사용
+     void delay(int ms){ // 기존에있던 usleep함수를 delay로 변경후 각 os 에 맞게 분기 둘다 delay()를 사용
         Sleep(ms);
      }
      
@@ -43,7 +43,7 @@
 
     // 터미널 설정
     struct termios orig_termios; // else밖에 선언되어있던 struct termios를 else안에 추가
-
+ 
     void coin_Beep() { // 코인 먹는 사운드 함수 입니다.
         printf("\a"); // \a는 ASCII 벨 문자로 터미널 벨소리가 나오는 것입니다.(이스케이프 코드이기도 하답니다)
         fflush(stdout);
@@ -360,7 +360,7 @@ void init_stage() {
 void draw_game() {
     //printf("\x1b[2J\x1b[H"); 이건 리눅스랑 맥용이라서 clrscr로 바꿨습니다.
     clrscr();
-    printf("Stage: %d | Score: %d\n", stage + 1, score);
+    printf("Stage: %d | Score: %d, ♥️x %d\n", stage + 1, score, Heart);
     printf("조작: ← → or A D (이동), ↑ ↓ or W S (사다리), Space (점프), q (종료)\n");
 
     char display_map[MAP_HEIGHT][MAP_WIDTH + 1];
@@ -478,7 +478,7 @@ void check_collisions() {
     for (int i = 0; i < enemy_count; i++) {
         if (player_x == enemies[i].x && player_y == enemies[i].y) {
             score = (score > 50) ? score - 50 : 0;
-            collision_Beep();
+            collision_Beep(); 
             Heart--;//충돌시 Heart감소  
 
             if(Heart<=0){

@@ -3,32 +3,98 @@
 #include <string.h>
 #include <time.h>
 
-#ifdef _WIN32//window 
-#include <windows.h>
-#include <conio.h>
-    void delay(int ms){ 
+#ifdef _WIN32//window
+     #include <windows.h>
+     #include <conio.h>
+
+     void coin_Beep(){ // 코인 먹는 사운드 함수 입니다.
+        Beep(1000, 30);  // Beep(주파수, 지속시간)
+        Beep(1500, 40);
+     }
+     void collision_Beep(){ // 부딪혔을때 나오는 사운드 함수 입니다.
+        Beep(400, 100);
+        Beep(200, 150);
+     }
+     void delay(int ms){ // 기존에있던 usleep함수를 delay로 변경후 각 os에 맞게 분기 둘다 delay()를 사용
         Sleep(ms);
-    }
-    
-    void clrscr(){
-        system("cls");
-    }
+     }
+     
+     void clrscr(){
+        //system("cls"); cls로 화면을 매 프레임 초기화하면 눈뽕이 심해서
+
+        COORD pos = {0, 0}; // 커서 위치를 (0, 0)으로 이동시킨 뒤에
+        SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+     }
+
+     void hide_cursor() { // 그 커서를 숨겼습니다.
+        HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+        CONSOLE_CURSOR_INFO info;
+        info.dwSize = 100;
+        info.bVisible = FALSE;
+        SetConsoleCursorInfo(consoleHandle, &info);
+     }
+     void disable_raw_mode(){} // Linux에서는 disable, enable을 사용하는데 windows에서는 사용을 안하지만 
+     void enable_raw_mode(){} // 빼면 undefined가 나와서 선언만 해두었습니다.
 
 #else//Linux, macOS
-#include <unistd.h>
-#include <termios.h>
-#include <fcntl.h>
-    
-    void delay(int  ms){
-        usleep(ms*1000);
+    #include <unistd.h>
+    #include <termios.h>
+    #include <fcntl.h>
+
+    // 터미널 설정
+    struct termios orig_termios; // else밖에 선언되어있던 struct termios를 else안에 추가
+
+    void coin_Beep() { // 코인 먹는 사운드 함수 입니다.
+        printf("\a"); // \a는 ASCII 벨 문자로 터미널 벨소리가 나오는 것입니다.(이스케이프 코드이기도 하답니다)
+        fflush(stdout);
     }
+    void collision_Beep(){ // 부딪혔을때 나오는 사운드 함수 입니다.
+        printf("\a"); 
+        fflush(stdout);
+        usleep(200000);  // 터미널 벨소리 하나밖에 없어 coin과 차별성을 주기위해 0.2초 딜레이를 주고 2번 나오게 했습니다.
+        printf("\a");
+        fflush(stdout);
+    }
+
+    void delay(int ms){ // 기존에있던 usleep을 delay함수로 변경하여 추가
+        usleep(ms * 1000); // Linux에선 90000이 0.09초인데 windows에선 90000이 90초여서 delay를 90으로 바꾼후 Linux에서 *1000을 해줬습니다.
+    }
+    
     void clrscr(){
         printf("\033[2J\033[H");
     }
+
+    // 터미널 Raw 모드 활성화/비활성화 else밖에 선언되어있던 disable, enable else안에 추가
+    void disable_raw_mode() { tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios); }
+    void enable_raw_mode() {
+        tcgetattr(STDIN_FILENO, &orig_termios);
+        atexit(disable_raw_mode);
+        struct termios raw = orig_termios;
+        raw.c_lflag &= ~(ECHO | ICANON);
+        tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
+    }
+
+    // 비동기 키보드 입력 확인
+    int kbhit() { //제일 밑에 선언되어있던 kbhit()을 분기하기위해 else에 추가
+        struct termios oldt, newt;
+        int ch;
+        int oldf;
+        tcgetattr(STDIN_FILENO, &oldt);
+        newt = oldt;
+        newt.c_lflag &= ~(ICANON | ECHO);
+        tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+        oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+        fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+        ch = getchar();
+        tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+        fcntl(STDIN_FILENO, F_SETFL, oldf);
+        if(ch != EOF) {
+            ungetc(ch, stdin);
+            return 1;
+        }
+        return 0;
+    }
 #endif
-
-
-
 
 // 맵 및 게임 요소 정의 (수정된 부분)
 #define MAP_WIDTH 40  // 맵 너비를 40으로 변경
@@ -68,8 +134,7 @@ int enemy_count = 0;
 Coin coins[MAX_COINS];
 int coin_count = 0;
 
-// 터미널 설정
-struct termios orig_termios;
+
 
 // 함수 선언
 void disable_raw_mode();
@@ -142,6 +207,10 @@ int main() {
     srand(time(NULL));
     enable_raw_mode();
 
+    #ifdef _WIN32 // 윈도우일때만 그 커서 숨기기를 진행하게 했습니다.
+        hide_cursor();
+    #endif
+
     char choice ='\0';  
     title_screen1();  
     title_screen2();
@@ -168,29 +237,57 @@ int main() {
     char c = '\0';
     int game_over = 0;
 
-    while (!game_over && stage < MAX_STAGES) {
-        if (kbhit()) {
-            c = getchar();
-            if (c == 'q') {
-                game_over = 1;
-                continue;
-            }
-            if (c == '\x1b') {
-                getchar(); // '['
-                switch (getchar()) {
-                    case 'A': c = 'w'; break; // Up
-                    case 'B': c = 's'; break; // Down
-                    case 'C': c = 'd'; break; // Right
-                    case 'D': c = 'a'; break; // Left
-                }
-            }
-        } else {
-            c = '\0';
-        }
+    #ifdef _WIN32 // windows에서 컴파일 시 유니코드 문제로 깨져서 출력되어서 UTF-8 고정 시키게끔 했습니다.
+      SetConsoleCP(65001); // windows에서 컴파일시 한글이 깨져 기존 Diablo에 있는 SetConsole을 추가하였습니다.
+      SetConsoleOutputCP(65001);
+    #endif
 
+    while (!game_over && stage < MAX_STAGES) {
+        #ifdef _WIN32
+            if (_kbhit()) { // conio.h 안에 있는 _kbhit() _getch() 를 불러와 windows에서도 키를 입력받게 바꾸고 분기처리하였습니다. 
+                c = _getch();
+
+                if (c == -32 || c == 224){ // 윈도우에서도 방향키 입력 받을 수 있게 추가했습니다.
+                    c = _getch();
+                    switch (c) {
+                        case 72: c = 'w'; break; // Up
+                        case 80: c = 's'; break; // Down
+                        case 77: c = 'd'; break; // Right
+                        case 75: c = 'a'; break; // Left
+                    }
+                }
+
+                if (c == 'q') {
+                    game_over = 1;
+                    continue;
+                }
+            } else {
+                c = '\0';
+            }
+        #else
+            if (kbhit()) {
+                c = getchar();
+                if (c == 'q') {
+                    game_over = 1;
+                    continue;
+                }
+                if (c == '\x1b') {
+                    getchar(); // '['
+                    switch (getchar()) {
+                        case 'A': c = 'w'; break; // Up
+                        case 'B': c = 's'; break; // Down
+                        case 'C': c = 'd'; break; // Right
+                        case 'D': c = 'a'; break; // Left
+                    }
+                }
+            } else {
+                c = '\0';
+            }
+        #endif
+   
         update_game(c);
         draw_game();
-        usleep(90000); 
+        delay(90); //windows에선 ms단위로 받아 90으로 변경하였습니다.(Linux는 μs단위)
 
         if (map[stage][player_y][player_x] == 'E') {
             stage++;
@@ -209,15 +306,7 @@ int main() {
 }
 
 
-// 터미널 Raw 모드 활성화/비활성화
-void disable_raw_mode() { tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios); }
-void enable_raw_mode() {
-    tcgetattr(STDIN_FILENO, &orig_termios);
-    atexit(disable_raw_mode);
-    struct termios raw = orig_termios;
-    raw.c_lflag &= ~(ECHO | ICANON);
-    tcsetattr(STDIN_FILENO, TCSAFLUSH, &raw);
-}
+
 
 // 맵 파일 로드
 void load_maps() {
@@ -269,9 +358,10 @@ void init_stage() {
 
 // 게임 화면 그리기
 void draw_game() {
+    //printf("\x1b[2J\x1b[H"); 이건 리눅스랑 맥용이라서 clrscr로 바꿨습니다.
     clrscr();
-    printf("Stage: %d | Score: %d Heart: %d\n", stage + 1, score, Heart);
-    printf("조작: ← → (이동), ↑ ↓ (사다리), Space (점프), q (종료)\n");
+    printf("Stage: %d | Score: %d\n", stage + 1, score);
+    printf("조작: ← → or A D (이동), ↑ ↓ or W S (사다리), Space (점프), q (종료)\n");
 
     char display_map[MAP_HEIGHT][MAP_WIDTH + 1];
     for(int y=0; y < MAP_HEIGHT; y++) {
@@ -388,6 +478,7 @@ void check_collisions() {
     for (int i = 0; i < enemy_count; i++) {
         if (player_x == enemies[i].x && player_y == enemies[i].y) {
             score = (score > 50) ? score - 50 : 0;
+            collision_Beep();
             Heart--;//충돌시 Heart감소  
 
             if(Heart<=0){
@@ -403,27 +494,8 @@ void check_collisions() {
         if (!coins[i].collected && player_x == coins[i].x && player_y == coins[i].y) {
             coins[i].collected = 1;
             score += 20;
+            coin_Beep(); //코인을 먹었을때 비프음 추가
         }
     }
 }
 
-// 비동기 키보드 입력 확인
-int kbhit() {
-    struct termios oldt, newt;
-    int ch;
-    int oldf;
-    tcgetattr(STDIN_FILENO, &oldt);
-    newt = oldt;
-    newt.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
-    oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
-    fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
-    ch = getchar(); 
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
-    fcntl(STDIN_FILENO, F_SETFL, oldf);
-    if(ch != EOF) {
-        ungetc(ch, stdin);
-        return 1;
-    }
-    return 0;
-}

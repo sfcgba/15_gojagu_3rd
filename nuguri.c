@@ -21,7 +21,7 @@
         Sleep(ms);
      }
 
-     void clr_hwamyeon(){
+     void clr_hwamyeon(){ // 윈도우에서 아래 현상 수정하니 리눅스에서 cls해달라고 해줘서 추가한 함수입니다.
         system("cls");
      }
      
@@ -167,7 +167,9 @@ void init_coin();//추가
 
 
 void title_screen1(){//게임 시작시 나오는 화면
-    clr_hwamyeon();
+    #ifdef _WIN32
+        clr_hwamyeon();
+    #endif
     clrscr();
     printf("\n\n\n\n\n");
     printf ("              =======================\n");
@@ -177,7 +179,9 @@ void title_screen1(){//게임 시작시 나오는 화면
     delay(3000);
 }
 void title_screen2(){ //title_screen1 다음에 선택지 화면
-    clr_hwamyeon();
+    #ifdef _WIN32
+        clr_hwamyeon();
+    #endif
     clrscr();
     printf("\n\n\n\n\n");
 	printf("          -----------------------------------\n");
@@ -194,7 +198,9 @@ void title_screen2(){ //title_screen1 다음에 선택지 화면
 
 
 void ending_clear(int final_score){//클리어 시 엔딩화면 함수 추가
-    clr_hwamyeon();
+    #ifdef _WIN32
+        clr_hwamyeon();
+    #endif
     clrscr();
     printf("\n\n\n\n\n");
     printf("              ===========================       \n");
@@ -205,7 +211,9 @@ void ending_clear(int final_score){//클리어 시 엔딩화면 함수 추가
 }
 
 void ending_gameover(int final_score){//게임 오버 시 엔딩화면 함수 추가
-    clr_hwamyeon();
+    #ifdef _WIN32
+        clr_hwamyeon();
+    #endif
     clrscr(); 
     printf("\n\n\n\n\n");
     printf("               ==============================       \n");

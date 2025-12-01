@@ -18,6 +18,10 @@
      void delay(int ms){ // 기존에있던 usleep함수를 delay로 변경후 각 os 에 맞게 분기 둘다 delay()를 사용
         Sleep(ms);
      }
+
+     void clrhwamyeon(){
+          system("cls"); // 윈도우에서 화면 전환 시에 덮어씌워 출력하는 현상 수정을 위해 특정 상황에서만 cls를 실행하게 변경했습니다.
+     }
      
      void clrscr(){
         //system("cls"); cls로 화면을 매 프레임 초기화하면 눈뽕이 심해서
@@ -157,6 +161,7 @@ void ending_gameover(int final_score);
 
 
 void title_screen1(){//게임 시작시 나오는 화면   
+    clrhwamyeon();
     clrscr();
     printf("\n\n\n\n\n");
     printf ("              =======================\n");
@@ -165,7 +170,8 @@ void title_screen1(){//게임 시작시 나오는 화면
     printf("              =======================\n\n\n");
     delay(3000);
 }
-void title_screen2(){ //title_screen1 다음에 선택지 화면  
+void title_screen2(){ //title_screen1 다음에 선택지 화면
+    clrhwamyeon();  
     clrscr();
     printf("\n\n\n\n\n");
 	printf("          -----------------------------------\n");
@@ -182,6 +188,7 @@ void title_screen2(){ //title_screen1 다음에 선택지 화면
 
 
 void ending_clear(int final_score){//클리어 시 엔딩화면 함수 추가
+    clrhwamyeon();
     clrscr();
     printf("\n\n\n\n\n");
     printf("              ===========================       \n");
@@ -192,6 +199,7 @@ void ending_clear(int final_score){//클리어 시 엔딩화면 함수 추가
 }
 
 void ending_gameover(int final_score){//게임 오버 시 엔딩화면 함수 추가
+    clrhwamyeon();
     clrscr(); 
     printf("\n\n\n\n\n");
     printf("               ==============================       \n");
@@ -335,6 +343,7 @@ void load_maps() {
 
 // 현재 스테이지 초기화
 void init_stage() {
+    clrhwamyeon();
     enemy_count = 0;
     coin_count = 0;
     is_jumping = 0;

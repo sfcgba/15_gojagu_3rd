@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,12 +16,9 @@
         Beep(400, 100);
         Beep(200, 150);
      }
+     
      void delay(int ms){ // 기존에있던 usleep함수를 delay로 변경후 각 os 에 맞게 분기 둘다 delay()를 사용
         Sleep(ms);
-     }
-
-     void clrhwamyeon(){
-          system("cls"); // 윈도우에서 화면 전환 시에 덮어씌워 출력하는 현상 수정을 위해 특정 상황에서만 cls를 실행하게 변경했습니다.
      }
      
      void clrscr(){
@@ -47,6 +45,7 @@
 
     // 터미널 설정
     struct termios orig_termios; // else밖에 선언되어있던 struct termios를 else안에 추가
+
  
     void coin_Beep() { // 코인 먹는 사운드 함수 입니다.
         printf("\a"); // \a는 ASCII 벨 문자로 터미널 벨소리가 나오는 것입니다.(이스케이프 코드이기도 하답니다)
@@ -138,7 +137,9 @@ int enemy_count = 0;
 Coin coins[MAX_COINS];
 int coin_count = 0;
 
-
+//
+int coin_save[MAX_STAGES][MAP_HEIGHT][MAP_WIDTH];//코인 상태 저장 
+//
 
 // 함수 선언
 void disable_raw_mode();
@@ -158,10 +159,10 @@ void title_screen1();
 void title_screen2();
 void ending_clear(int final_score);
 void ending_gameover(int final_score);
+void init_coin();//추가  
 
 
 void title_screen1(){//게임 시작시 나오는 화면   
-    clrhwamyeon();
     clrscr();
     printf("\n\n\n\n\n");
     printf ("              =======================\n");
@@ -170,8 +171,7 @@ void title_screen1(){//게임 시작시 나오는 화면
     printf("              =======================\n\n\n");
     delay(3000);
 }
-void title_screen2(){ //title_screen1 다음에 선택지 화면
-    clrhwamyeon();  
+void title_screen2(){ //title_screen1 다음에 선택지 화면  
     clrscr();
     printf("\n\n\n\n\n");
 	printf("          -----------------------------------\n");
@@ -188,7 +188,6 @@ void title_screen2(){ //title_screen1 다음에 선택지 화면
 
 
 void ending_clear(int final_score){//클리어 시 엔딩화면 함수 추가
-    clrhwamyeon();
     clrscr();
     printf("\n\n\n\n\n");
     printf("              ===========================       \n");
@@ -199,7 +198,6 @@ void ending_clear(int final_score){//클리어 시 엔딩화면 함수 추가
 }
 
 void ending_gameover(int final_score){//게임 오버 시 엔딩화면 함수 추가
-    clrhwamyeon();
     clrscr(); 
     printf("\n\n\n\n\n");
     printf("               ==============================       \n");
@@ -239,6 +237,7 @@ int main() {
 
 
     load_maps();
+    init_coin();
     init_stage();
     
 
@@ -340,10 +339,18 @@ void load_maps() {
     fclose(file);
 }
 
+void init_coin(){// 한번 먹은 코인 다시 나타나지 않게
+    for(int s=0; s<MAX_STAGES; s++){
+        for(int y=0; y<MAP_HEIGHT; y++){
+             for(int x=0;x<MAP_WIDTH; x++){
+                coin_save[s][y][x]=0;
+             }
+        }
+    }
+}
 
 // 현재 스테이지 초기화
 void init_stage() {
-    clrhwamyeon();
     enemy_count = 0;
     coin_count = 0;
     is_jumping = 0;
@@ -359,7 +366,10 @@ void init_stage() {
                 enemies[enemy_count] = (Enemy){x, y, (rand() % 2) * 2 - 1};
                 enemy_count++;
             } else if (cell == 'C' && coin_count < MAX_COINS) {
-                coins[coin_count++] = (Coin){x, y, 0};
+                if(coin_save[stage][y][x]==0){
+                    coins[coin_count++] = (Coin){x, y, 0};
+                }
+                
             }
         }
     }
@@ -485,9 +495,9 @@ void move_enemies() {
 // 충돌 감지 로직
 void check_collisions() {
     for (int i = 0; i < enemy_count; i++) {
-        if (player_x == enemies[i].x && player_y == enemies[i].y) {
+        if (player_x == enemies[i].x  && player_y == enemies[i].y) {
             score = (score > 50) ? score - 50 : 0;
-            collision_Beep(); 
+            collision_Beep();
             Heart--;//충돌시 Heart감소  
 
             if(Heart<=0){
@@ -503,7 +513,9 @@ void check_collisions() {
         if (!coins[i].collected && player_x == coins[i].x && player_y == coins[i].y) {
             coins[i].collected = 1;
             score += 20;
-            coin_Beep(); //코인을 먹었을때 비프음 추가
+            coin_Beep(); //코인을 먹었을때 비프음 추가 
+
+            coin_save[stage][coins[i].y][coins[i].x]=1;
         }
     }
 }

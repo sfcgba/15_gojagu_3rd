@@ -20,6 +20,10 @@
      void delay(int ms){ // 기존에있던 usleep함수를 delay로 변경후 각 os 에 맞게 분기 둘다 delay()를 사용
         Sleep(ms);
      }
+
+     void clr_hwamyeon(){
+        system("cls");
+     }
      
      void clrscr(){
         //system("cls"); cls로 화면을 매 프레임 초기화하면 눈뽕이 심해서
@@ -162,7 +166,8 @@ void ending_gameover(int final_score);
 void init_coin();//추가  
 
 
-void title_screen1(){//게임 시작시 나오는 화면   
+void title_screen1(){//게임 시작시 나오는 화면
+    clr_hwamyeon();
     clrscr();
     printf("\n\n\n\n\n");
     printf ("              =======================\n");
@@ -171,7 +176,8 @@ void title_screen1(){//게임 시작시 나오는 화면
     printf("              =======================\n\n\n");
     delay(3000);
 }
-void title_screen2(){ //title_screen1 다음에 선택지 화면  
+void title_screen2(){ //title_screen1 다음에 선택지 화면
+    clr_hwamyeon();
     clrscr();
     printf("\n\n\n\n\n");
 	printf("          -----------------------------------\n");
@@ -188,6 +194,7 @@ void title_screen2(){ //title_screen1 다음에 선택지 화면
 
 
 void ending_clear(int final_score){//클리어 시 엔딩화면 함수 추가
+    clr_hwamyeon();
     clrscr();
     printf("\n\n\n\n\n");
     printf("              ===========================       \n");
@@ -198,6 +205,7 @@ void ending_clear(int final_score){//클리어 시 엔딩화면 함수 추가
 }
 
 void ending_gameover(int final_score){//게임 오버 시 엔딩화면 함수 추가
+    clr_hwamyeon();
     clrscr(); 
     printf("\n\n\n\n\n");
     printf("               ==============================       \n");

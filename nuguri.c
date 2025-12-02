@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,7 +21,7 @@
         Sleep(ms);
      }
 
-     void clr_hwamyeon(){
+     void clr_hwamyeon(){ // 윈도우에서 아래 현상 수정하니 리눅스에서 cls해달라고 해줘서 추가한 함수입니다.
         system("cls");
      }
      
@@ -70,9 +71,6 @@
         printf("\033[2J\033[H");
     }
 
-    void clr_hwamyeon(){
-        printf("\033[2J\033[H");
-     }
     // 터미널 Raw 모드 활성화/비활성화 else밖에 선언되어있던 disable, enable else안에 추가
     void disable_raw_mode() { tcsetattr(STDIN_FILENO, TCSAFLUSH, &orig_termios); }
     void enable_raw_mode() {
@@ -166,11 +164,12 @@ void title_screen2();
 void ending_clear(int final_score);
 void ending_gameover(int final_score);
 void init_coin();//추가  
-void clr_hwamyeon();
 
 
 void title_screen1(){//게임 시작시 나오는 화면
-    clr_hwamyeon();
+    #ifdef _WIN32
+        clr_hwamyeon();
+    #endif
     clrscr();
     printf("\n\n\n\n\n");
     printf ("              =======================\n");
@@ -180,7 +179,9 @@ void title_screen1(){//게임 시작시 나오는 화면
     delay(3000);
 }
 void title_screen2(){ //title_screen1 다음에 선택지 화면
-    clr_hwamyeon();
+    #ifdef _WIN32
+        clr_hwamyeon();
+    #endif
     clrscr();
     printf("\n\n\n\n\n");
 	printf("          -----------------------------------\n");
@@ -197,7 +198,9 @@ void title_screen2(){ //title_screen1 다음에 선택지 화면
 
 
 void ending_clear(int final_score){//클리어 시 엔딩화면 함수 추가
-    clr_hwamyeon();
+    #ifdef _WIN32
+        clr_hwamyeon();
+    #endif
     clrscr();
     printf("\n\n\n\n\n");
     printf("              ===========================       \n");
@@ -208,7 +211,9 @@ void ending_clear(int final_score){//클리어 시 엔딩화면 함수 추가
 }
 
 void ending_gameover(int final_score){//게임 오버 시 엔딩화면 함수 추가
-    clr_hwamyeon();
+    #ifdef _WIN32
+        clr_hwamyeon();
+    #endif
     clrscr(); 
     printf("\n\n\n\n\n");
     printf("               ==============================       \n");
@@ -530,4 +535,3 @@ void check_collisions() {
         }
     }
 }
-

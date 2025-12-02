@@ -251,6 +251,12 @@ int main() {
         return 0;
         }
 
+    #ifdef _WIN32 // 다른 부분엔 화면 초기화 적용했는데 게임 시작 직전 화면 초기화를 안해놔서 추가했습니다.
+        clr_hwamyeon();
+    #else
+        clrscr();   
+    #endif
+
 
     load_maps();
     init_coin();
